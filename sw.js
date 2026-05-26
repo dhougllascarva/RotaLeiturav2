@@ -1,33 +1,28 @@
-const CACHE_NAME = 'rotaleitura-v13000';
+const CACHE_NAME = 'rotaleitura-v13001';
 
 const urlsToCache = [
 
-  './',
-  './index.html',
-  './manifest.json',
-  './indexes.json',
+  '/RotaLeitura/',
+  '/RotaLeitura/index.html',
+  '/RotaLeitura/manifest.json',
+  '/RotaLeitura/indexes.json',
 
-  './171_1.json',
-  './171_2.json',
+  '/RotaLeitura/171_1.json',
+  '/RotaLeitura/171_2.json',
 
-  './172.json',
+  '/RotaLeitura/172.json',
 
-  './173_1.json',
-  './173_2.json',
+  '/RotaLeitura/173_1.json',
+  '/RotaLeitura/173_2.json',
 
-  './174.json',
-  './175.json',
-  './176.json',
+  '/RotaLeitura/174.json',
+  '/RotaLeitura/175.json',
+  '/RotaLeitura/176.json',
 
-  './launchericon-192x192.png',
-  './launchericon-512x512.png'
+  '/RotaLeitura/launchericon-192x192.png',
+  '/RotaLeitura/launchericon-512x512.png'
 
 ];
-
-
-// ======================================
-// INSTALL
-// ======================================
 
 self.addEventListener('install', event => {
 
@@ -45,11 +40,6 @@ self.addEventListener('install', event => {
   );
 
 });
-
-
-// ======================================
-// ACTIVATE
-// ======================================
 
 self.addEventListener('activate', event => {
 
@@ -78,11 +68,6 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 
 });
-
-
-// ======================================
-// FETCH
-// ======================================
 
 self.addEventListener('fetch', event => {
 
