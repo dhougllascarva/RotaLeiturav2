@@ -160,6 +160,7 @@ select:focus{
   background:#E9EEF5;
   color:#031D44;
   transition:.2s;
+  cursor:pointer;
 }
 
 .ativa{
@@ -388,8 +389,7 @@ const auth =
 const db =
   getFirestore(app);
 
-window.fazerLogin =
-async function(){
+async function fazerLogin(){
 
   let email =
     document.getElementById('email').value;
@@ -407,33 +407,23 @@ async function(){
 
   }catch(e){
 
+    console.error(e);
+
     alert('Login inválido');
 
   }
 
 }
 
-window.logout =
-async function(){
+window.fazerLogin = fazerLogin;
+
+async function logout(){
 
   await signOut(auth);
 
 }
 
-let permissoes = [];
-
-let banco = [];
-let indexes = {};
-let map = null;
-
-const AREAS = {
-  "171":"ITABUNA",
-  "172":"IBICARAI",
-  "173":"ILHÉUS",
-  "174":"COARACI",
-  "175":"CANAVIEIRAS",
-  "176":"CAMACAN"
-};
+window.logout = logout;
 
 onAuthStateChanged(auth,
 async user => {
@@ -481,9 +471,6 @@ async user => {
 
   }
 
-  permissoes =
-    dados.areas;
-
   document
     .getElementById('loginTela')
     .classList.add('oculto');
@@ -492,8 +479,6 @@ async user => {
     .getElementById('appTela')
     .classList.remove('oculto');
 
-  carregarSistema();
-
 });
 
 if ('serviceWorker' in navigator) {
@@ -501,7 +486,7 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
 
     navigator.serviceWorker
-      .register('/RotaLeitura/sw.js?v=13001');
+      .register('/RotaLeiturav2/sw.js?v=13002');
 
   });
 
