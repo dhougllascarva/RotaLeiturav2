@@ -1,94 +1,32 @@
+# INDEX.HTML FINAL — RotaLeitura
+
+Substitua TODO o conteúdo do seu `index.html` por este arquivo completo.
+
+```html
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
 
 <meta charset="UTF-8">
-
-<meta
-name="viewport"
-content="width=device-width, initial-scale=1.0"
->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>RotaLeitura</title>
 
 <link rel="manifest" href="manifest.json">
 
 <meta name="theme-color" content="#031D44">
-
 <meta name="mobile-web-app-capable" content="yes">
-
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RotaLeitura">
 
-<meta
-name="apple-mobile-web-app-status-bar-style"
-content="black-translucent"
->
+<link rel="icon" type="image/png" sizes="192x192" href="launchericon-192x192.png">
+<link rel="apple-touch-icon" href="launchericon-192x192.png">
 
-<meta
-name="apple-mobile-web-app-title"
-content="RotaLeitura"
->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<!-- FAVICON / MINIATURA DO CHROME -->
-<link
-rel="icon"
-type="image/png"
-sizes="48x48"
-href="launchericon-48x48.png"
->
-
-<link
-rel="icon"
-type="image/png"
-sizes="72x72"
-href="launchericon-72x72.png"
->
-
-<link
-rel="icon"
-type="image/png"
-sizes="96x96"
-href="launchericon-96x96.png"
->
-
-<link
-rel="icon"
-type="image/png"
-sizes="144x144"
-href="launchericon-144x144.png"
->
-
-<link
-rel="icon"
-type="image/png"
-sizes="192x192"
-href="launchericon-192x192.png"
->
-
-<link
-rel="apple-touch-icon"
-href="launchericon-192x192.png"
->
-
-<link
-rel="shortcut icon"
-href="launchericon-48x48.png"
->
-
-<link
-rel="stylesheet"
-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-/>
-
-<script
-src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-</script>
-
-<link
-href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-rel="stylesheet"
->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
 
@@ -115,13 +53,11 @@ body{
 .logo{
   font-size:30px;
   font-weight:700;
-  letter-spacing:.5px;
 }
 
 .sub{
   margin-top:6px;
   font-size:14px;
-  opacity:.85;
   color:#D7E3F4;
 }
 
@@ -149,7 +85,6 @@ select{
   background:white;
   outline:none;
   transition:.2s;
-  color:#031D44;
 }
 
 input:focus,
@@ -170,13 +105,7 @@ select:focus{
   font-weight:600;
   border:none;
   width:100%;
-  font-size:15px;
-  transition:.2s;
   cursor:pointer;
-}
-
-.botao:active{
-  transform:scale(.98);
 }
 
 .logout{
@@ -188,20 +117,15 @@ select:focus{
   background:white;
   padding:8px;
   gap:8px;
-  box-shadow:0 2px 10px rgba(0,0,0,.05);
 }
 
 .aba{
   flex:1;
   border:none;
   padding:14px;
-  font-size:15px;
-  font-weight:600;
   border-radius:14px;
+  font-weight:600;
   background:#E9EEF5;
-  color:#031D44;
-  transition:.2s;
-  cursor:pointer;
 }
 
 .ativa{
@@ -209,154 +133,151 @@ select:focus{
   color:white;
 }
 
+.oculto{
+  display:none;
+}
+
 #map{
   width:100%;
   height:75vh;
   border-radius:22px;
   margin-top:14px;
-  overflow:hidden;
-  box-shadow:0 4px 14px rgba(0,0,0,.08);
 }
 
-.oculto{
-  display:none;
+.loadingTela{
+  position:fixed;
+  inset:0;
+  background:#031D44;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:999999;
+  color:white;
+}
+
+.loader{
+  width:55px;
+  height:55px;
+  border:5px solid rgba(255,255,255,.2);
+  border-top:5px solid white;
+  border-radius:50%;
+  animation:girar 1s linear infinite;
+}
+
+@keyframes girar{
+  to{
+    transform:rotate(360deg);
+  }
+}
+
+.loadingTexto{
+  margin-top:20px;
+}
+
+.infoTitulo{
+  font-size:13px;
+  color:#64748B;
+  margin-bottom:4px;
+  font-weight:600;
+}
+
+.infoValor{
+  font-size:15px;
+  font-weight:600;
+  margin-bottom:14px;
+}
+
+.statusOffline{
+  position:fixed;
+  bottom:20px;
+  left:20px;
+  right:20px;
+  background:#031D44;
+  color:white;
+  padding:14px;
+  border-radius:16px;
+  text-align:center;
+  z-index:99999;
 }
 
 </style>
 
 </head>
-
 <body>
+
+<div id="loadingTela" class="loadingTela oculto">
+<div class="loader"></div>
+<div class="loadingTexto">Carregando...</div>
+</div>
+
+<div id="offlineAviso" class="statusOffline oculto">
+📡 Modo Offline Ativo
+</div>
 
 <div id="loginTela">
 
 <div class="topo">
-
-<div class="logo">
-RotaLeitura
-</div>
-
-<div class="sub">
-Inteligência em campo
-</div>
-
+<div class="logo">RotaLeitura</div>
+<div class="sub">Inteligência em campo</div>
 </div>
 
 <div class="container">
-
 <div class="card">
 
-<input
-type="email"
-id="email"
-placeholder="Email"
->
+<input type="email" id="email" placeholder="Email">
+<input type="password" id="senha" placeholder="Senha">
 
-<input
-type="password"
-id="senha"
-placeholder="Senha"
->
-
-<button
-class="botao"
-onclick="fazerLogin()"
->
-
+<button class="botao" onclick="fazerLogin()">
 ENTRAR
-
 </button>
 
 </div>
-
 </div>
 
 </div>
 
-<div
-id="appTela"
-class="oculto"
->
+<div id="appTela" class="oculto">
 
 <div class="topo">
-
-<div class="logo">
-RotaLeitura
-</div>
-
-<div class="sub">
-Inteligência em campo
-</div>
-
+<div class="logo">RotaLeitura</div>
+<div class="sub">Inteligência em campo</div>
 </div>
 
 <div class="abas">
 
-<button
-class="aba ativa"
-id="btnBusca"
-onclick="abrirAba('busca')"
->
+<button class="aba ativa" id="btnBusca" onclick="abrirAba('busca')">
 BUSCA
 </button>
 
-<button
-class="aba"
-id="btnMapa"
-onclick="abrirAba('mapa')"
->
+<button class="aba" id="btnMapa" onclick="abrirAba('mapa')">
 MAPA
 </button>
 
 </div>
 
-<div
-id="abaBusca"
-class="container"
->
+<div id="abaBusca" class="container">
 
 <select id="area"></select>
 
-<input
-list="listaMRUs"
-id="mru"
-placeholder="Digite ou selecione a MRU"
->
-
+<input list="listaMRUs" id="mru" placeholder="Digite ou selecione a MRU">
 <datalist id="listaMRUs"></datalist>
 
-<input
-type="text"
-id="busca"
-placeholder="Buscar instalação, medidor ou cliente"
->
+<input type="text" id="busca" placeholder="Buscar instalação, medidor ou cliente">
 
 <div id="resultados"></div>
 
 </div>
 
-<div
-id="abaMapa"
-class="container oculto"
->
+<div id="abaMapa" class="container oculto">
 
 <select id="areaMapa"></select>
 
-<input
-list="listaMRUsMapa"
-id="mruMapa"
-placeholder="Digite ou selecione a MRU"
->
-
+<input list="listaMRUsMapa" id="mruMapa" placeholder="Digite ou selecione a MRU">
 <datalist id="listaMRUsMapa"></datalist>
 
-<button
-class="botao"
-onclick="carregarMapa()"
->
-
+<button class="botao" onclick="carregarMapa()">
 EXIBIR MAPA
-
 </button>
 
 <div id="map"></div>
@@ -364,16 +285,9 @@ EXIBIR MAPA
 </div>
 
 <div class="container">
-
-<button
-class="botao logout"
-onclick="logout()"
->
-
+<button class="botao logout" onclick="logout()">
 SAIR
-
 </button>
-
 </div>
 
 </div>
@@ -381,650 +295,431 @@ SAIR
 <script type="module">
 
 import { initializeApp }
-
 from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 
 import {
-
-  getAuth,
-  signInWithEmailAndPassword,
-  onAuthStateChanged,
-  signOut
-
+getAuth,
+signInWithEmailAndPassword,
+onAuthStateChanged,
+signOut
 }
-
 from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 
 import {
-
-  getFirestore,
-  doc,
-  getDoc
-
+getFirestore,
+doc,
+getDoc
 }
-
 from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const firebaseConfig = {
-
-  apiKey: "AIzaSyAVmx3h0aMvivJ3jAVSkyndK8buCnrRbEA",
-
-  authDomain: "rotaleitura.firebaseapp.com",
-
-  projectId: "rotaleitura",
-
-  storageBucket: "rotaleitura.firebasestorage.app",
-
-  messagingSenderId: "1084691059100",
-
-  appId: "1:1084691059100:web:2ce8c10354da0cc191f859"
-
+apiKey: "SUA_API_KEY",
+authDomain: "SEU_AUTH_DOMAIN",
+projectId: "SEU_PROJECT_ID",
+storageBucket: "SEU_STORAGE_BUCKET",
+messagingSenderId: "SEU_MSG_ID",
+appId: "SEU_APP_ID"
 };
 
-const app =
-  initializeApp(firebaseConfig);
-
-const auth =
-  getAuth(app);
-
-const db =
-  getFirestore(app);
-
-window.fazerLogin =
-async function(){
-
-  let email =
-    document.getElementById('email').value;
-
-  let senha =
-    document.getElementById('senha').value;
-
-  try{
-
-    await signInWithEmailAndPassword(
-      auth,
-      email,
-      senha
-    );
-
-  }catch(e){
-
-    console.error(e);
-
-    alert('Login inválido');
-
-  }
-
-}
-
-window.logout =
-async function(){
-
-  await signOut(auth);
-
-}
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 let permissoes = [];
-
 let bancoBusca = [];
 let bancoMapa = [];
-
 let indexes = {};
 let map = null;
 
 const AREAS = {
-  "171":"ITABUNA",
-  "172":"IBICARAI",
-  "173":"ILHÉUS",
-  "174":"COARACI",
-  "175":"CANAVIEIRAS",
-  "176":"CAMACAN"
+"171":"ITABUNA",
+"172":"IBICARAI",
+"173":"ILHÉUS",
+"174":"COARACI",
+"175":"CANAVIEIRAS",
+"176":"CAMACAN"
 };
 
-onAuthStateChanged(auth,
-async user => {
+window.fazerLogin = async function(){
 
-  if(!user){
+try{
 
-    document
-      .getElementById('loginTela')
-      .classList.remove('oculto');
+mostrarLoading('Entrando...');
 
-    document
-      .getElementById('appTela')
-      .classList.add('oculto');
+await signInWithEmailAndPassword(
+  auth,
+  document.getElementById('email').value,
+  document.getElementById('senha').value
+);
 
-    return;
+}catch(e){
 
-  }
+alert('Login inválido');
+console.error(e);
 
-  try{
+}
 
-    let ref =
-      doc(db,'usuarios',user.email);
+ocultarLoading();
 
-    let snap =
-      await getDoc(ref);
+}
 
-    if(!snap.exists()){
+window.logout = async function(){
+await signOut(auth);
+}
 
-      alert('Sem permissão');
+onAuthStateChanged(auth, async user => {
 
-      logout();
+if(!user){
 
-      return;
+loginTela.classList.remove('oculto');
+appTela.classList.add('oculto');
 
-    }
+return;
 
-    let dados =
-      snap.data();
+}
 
-    if(!dados.ativo){
+try{
 
-      alert('Usuário desativado');
+mostrarLoading('Carregando usuário...');
 
-      logout();
+let snap = await getDoc(
+  doc(db,'usuarios',user.email)
+);
 
-      return;
+if(!snap.exists()){
+alert('Sem permissão');
+logout();
+return;
+}
 
-    }
+let dados = snap.data();
 
-    permissoes =
-      dados.areas || [];
+if(!dados.ativo){
+alert('Usuário desativado');
+logout();
+return;
+}
 
-    document
-      .getElementById('loginTela')
-      .classList.add('oculto');
+permissoes = dados.areas || [];
 
-    document
-      .getElementById('appTela')
-      .classList.remove('oculto');
+loginTela.classList.add('oculto');
+appTela.classList.remove('oculto');
 
-    carregarSistema();
+await carregarSistema();
 
-  }catch(e){
+}catch(e){
+console.error(e);
+alert('Erro ao carregar usuário');
+}
 
-    console.error(e);
-
-    alert('Erro ao carregar usuário');
-
-  }
+ocultarLoading();
 
 });
 
 async function carregarSistema(){
 
-  try{
+let response = await fetch('./indexes.json');
+indexes = await response.json();
 
-    let response =
-      await fetch('./indexes.json');
-
-    indexes =
-      await response.json();
-
-    popularAreas();
-
-  }catch(e){
-
-    console.error(e);
-
-    alert('Erro ao carregar indexes.json');
-
-  }
+popularAreas();
 
 }
 
 function popularAreas(){
 
-  let html =
-    '<option value="">Selecionar Área</option>';
+let html = '<option value="">Selecionar Área</option>';
 
-  permissoes.forEach(area => {
+permissoes.forEach(area => {
+html += `<option value="${area}">${area} - ${AREAS[area]}</option>`;
+});
 
-    html += `
-<option value="${area}">
-${area} - ${AREAS[area]}
-</option>
-`;
+area.innerHTML = html;
+areaMapa.innerHTML = html;
 
-  });
+if(permissoes.length === 1){
 
-  document.getElementById('area')
-    .innerHTML = html;
+area.value = permissoes[0];
+areaMapa.value = permissoes[0];
 
-  document.getElementById('areaMapa')
-    .innerHTML = html;
+area.style.display='none';
+areaMapa.style.display='none';
 
-  if(permissoes.length === 1){
-
-    let unicaArea = permissoes[0];
-
-    document.getElementById('area')
-      .value = unicaArea;
-
-    document.getElementById('areaMapa')
-      .value = unicaArea;
-
-    document.getElementById('area')
-      .style.display = 'none';
-
-    document.getElementById('areaMapa')
-      .style.display = 'none';
-
-    carregarArea();
-    carregarAreaMapa();
-
-  }
+carregarArea();
+carregarAreaMapa();
 
 }
 
-window.abrirAba =
-function(tipo){
+}
 
-  document
-    .getElementById('abaBusca')
-    .classList.add('oculto');
+window.abrirAba = function(tipo){
 
-  document
-    .getElementById('abaMapa')
-    .classList.add('oculto');
+abaBusca.classList.add('oculto');
+abaMapa.classList.add('oculto');
 
-  document
-    .getElementById('btnBusca')
-    .classList.remove('ativa');
+btnBusca.classList.remove('ativa');
+btnMapa.classList.remove('ativa');
 
-  document
-    .getElementById('btnMapa')
-    .classList.remove('ativa');
+if(tipo === 'busca'){
 
-  if(tipo == 'busca'){
+abaBusca.classList.remove('oculto');
+btnBusca.classList.add('ativa');
 
-    document
-      .getElementById('abaBusca')
-      .classList.remove('oculto');
+}else{
 
-    document
-      .getElementById('btnBusca')
-      .classList.add('ativa');
+abaMapa.classList.remove('oculto');
+btnMapa.classList.add('ativa');
 
-  }else{
-
-    document
-      .getElementById('abaMapa')
-      .classList.remove('oculto');
-
-    document
-      .getElementById('btnMapa')
-      .classList.add('ativa');
-
-    setTimeout(() => {
-
-      if(map){
-
-        map.invalidateSize();
-
-      }
-
-    },300);
-
-  }
+setTimeout(()=>{
+if(map){
+map.invalidateSize();
+}
+},300);
 
 }
 
-document
-.getElementById('area')
-.addEventListener(
-'change',
-carregarArea
-);
+}
+
+function normalizar(texto){
+
+return String(texto || '')
+.toLowerCase()
+.normalize('NFD')
+.replace(/[\u0300-\u036f]/g,'')
+.replace(/rua/g,'')
+.replace(/avenida/g,'')
+.replace(/travessa/g,'')
+.replace(/av/g,'')
+.replace(/\s+/g,'')
+.trim();
+
+}
+
+area.addEventListener('change', carregarArea);
 
 async function carregarArea(){
 
-  let area =
-    document.getElementById('area').value;
+mostrarLoading('Carregando instalações...');
 
-  bancoBusca = [];
+bancoBusca = [];
 
-  try{
+let arquivos = indexes[area.value] || [];
 
-    let arquivos =
-      indexes[area] || [];
+for(let arquivo of arquivos){
 
-    for(let arquivo of arquivos){
+let response = await fetch('./'+arquivo);
+let parte = await response.json();
 
-      let response =
-        await fetch('./' + arquivo);
-
-      let parte =
-        await response.json();
-
-      bancoBusca =
-        bancoBusca.concat(parte);
-
-    }
-
-    let mrus = [
-
-      ...new Set(
-        bancoBusca.map(i => i[0])
-      )
-
-    ];
-
-    mrus.sort();
-
-    let lista =
-      document.getElementById('listaMRUs');
-
-    lista.innerHTML = '';
-
-    mrus.forEach(mru => {
-
-      lista.innerHTML +=
-        `<option value="${mru}">`;
-
-    });
-
-  }catch(e){
-
-    console.error(e);
-
-    alert('Erro ao carregar área');
-
-  }
+bancoBusca = bancoBusca.concat(parte);
 
 }
 
-document
-.getElementById('mru')
-.addEventListener(
-'input',
-pesquisar
-);
+let mrus = [...new Set(bancoBusca.map(i=>i[0]))];
+mrus.sort();
 
-document
-.getElementById('busca')
-.addEventListener(
-'input',
-pesquisar
-);
+listaMRUs.innerHTML='';
+
+mrus.forEach(mru=>{
+listaMRUs.innerHTML += `<option value="${mru}">`;
+});
+
+ocultarLoading();
+
+}
+
+mru.addEventListener('input', pesquisar);
+busca.addEventListener('input', pesquisar);
 
 function pesquisar(){
 
-  let mru =
-    document
-    .getElementById('mru')
-    .value
-    .toLowerCase()
-    .trim();
+let filtroMRU = normalizar(mru.value);
+let filtroTexto = normalizar(busca.value);
 
-  let texto =
-    document
-    .getElementById('busca')
-    .value
-    .toLowerCase()
-    .trim();
+let resultados = bancoBusca.filter(item=>{
 
-  texto =
-    texto.replace(/\s+/g,' ');
+let okMRU = !filtroMRU || normalizar(item[0]).includes(filtroMRU);
 
-  let resultados =
-    bancoBusca.filter(item => {
+let texto = normalizar(
+item[1]+' '+
+item[2]+' '+
+item[3]+' '+
+item[4]+' '+
+item[5]+' '+
+item[6]+' '+
+item[7]
+);
 
-      let okMru =
-        !mru ||
-        String(item[0])
-        .toLowerCase()
-        .includes(mru);
+let okTexto = !filtroTexto || texto.includes(filtroTexto);
 
-      let pesquisa = (
+return okMRU && okTexto;
 
-        String(item[1]) + ' ' +
-        String(item[2]) + ' ' +
-        String(item[7])
+}).slice(0,100);
 
-      )
+let html = `
+<div class="card">
+<b>${resultados.length}</b> resultado(s)
+</div>
+`;
 
-      .toLowerCase()
-      .replace(/\s+/g,' ');
+if(resultados.length === 0){
+html += `<div class="card">Nenhum resultado encontrado.</div>`;
+}
 
-      let okTexto =
-        pesquisa.includes(texto);
+resultados.forEach(item=>{
 
-      return okMru && okTexto;
-
-    }).slice(0,50);
-
-  let html = '';
-
-  resultados.forEach(item => {
-
-    html += `
-
+html += `
 <div class="card">
 
-<b>⚡ Instalação</b><br>
-${item[1]}<br><br>
+<div class="infoTitulo">⚡ Instalação</div>
+<div class="infoValor">${item[1]}</div>
 
-<b>🔢 Medidor</b><br>
-${item[2]}<br><br>
+<div class="infoTitulo">🔢 Medidor</div>
+<div class="infoValor">${item[2]}</div>
 
-<b>📍 Rua</b><br>
-${item[3]}<br><br>
+<div class="infoTitulo">📍 Endereço</div>
+<div class="infoValor">${item[3]}, ${item[4]}</div>
 
-<b>🏠 Número</b><br>
-${item[4]}<br><br>
+<div class="infoTitulo">🗺 Bairro</div>
+<div class="infoValor">${item[5]}</div>
 
-<b>🗺 Bairro</b><br>
-${item[5]}<br><br>
+<div class="infoTitulo">🏙 Cidade</div>
+<div class="infoValor">${item[6]}</div>
 
-<b>🏙 Cidade</b><br>
-${item[6]}<br><br>
+<div class="infoTitulo">👤 Cliente</div>
+<div class="infoValor">${item[7]}</div>
 
-<b>👤 Cliente</b><br>
-${item[7]}
-
-<a
-class="botao"
-href="${item[10]}"
-target="_blank"
->
-
-🗺 Abrir Maps
-
+<a class="botao" href="${item[10]}" target="_blank">
+🗺 Navegar
 </a>
 
 </div>
-
 `;
 
-  });
+});
 
-  document
-    .getElementById('resultados')
-    .innerHTML = html;
+resultados.innerHTML = html;
+
+document.getElementById('resultados').innerHTML = html;
 
 }
 
-document
-.getElementById('areaMapa')
-.addEventListener(
-'change',
-carregarAreaMapa
-);
+areaMapa.addEventListener('change', carregarAreaMapa);
 
 async function carregarAreaMapa(){
 
-  let area =
-    document.getElementById('areaMapa').value;
+bancoMapa=[];
 
-  bancoMapa = [];
+let arquivos = indexes[areaMapa.value] || [];
 
-  try{
+for(let arquivo of arquivos){
 
-    let arquivos =
-      indexes[area] || [];
+let response = await fetch('./'+arquivo);
+let parte = await response.json();
 
-    for(let arquivo of arquivos){
-
-      let response =
-        await fetch('./' + arquivo);
-
-      let parte =
-        await response.json();
-
-      bancoMapa =
-        bancoMapa.concat(parte);
-
-    }
-
-    let mrus = [
-
-      ...new Set(
-        bancoMapa.map(i => i[0])
-      )
-
-    ];
-
-    mrus.sort();
-
-    let lista =
-      document.getElementById('listaMRUsMapa');
-
-    lista.innerHTML = '';
-
-    mrus.forEach(mru => {
-
-      lista.innerHTML +=
-        `<option value="${mru}">`;
-
-    });
-
-  }catch(e){
-
-    console.error(e);
-
-    alert('Erro ao carregar mapa');
-
-  }
+bancoMapa = bancoMapa.concat(parte);
 
 }
 
-window.carregarMapa =
-function(){
+let mrus = [...new Set(bancoMapa.map(i=>i[0]))];
+mrus.sort();
 
-  let mru =
-    document
-    .getElementById('mruMapa')
-    .value;
+listaMRUsMapa.innerHTML='';
 
-  let dados =
-    bancoMapa.filter(i => i[0] == mru);
+mrus.forEach(mru=>{
+listaMRUsMapa.innerHTML += `<option value="${mru}">`;
+});
 
-  if(dados.length == 0){
+}
 
-    alert('Nenhuma instalação encontrada');
-    return;
+window.carregarMapa = function(){
 
-  }
+let dados = bancoMapa.filter(i=>i[0] == mruMapa.value);
 
-  let primeiro =
-    dados.find(i =>
-      i[8] != 'nan' &&
-      i[9] != 'nan'
-    );
+if(dados.length===0){
+alert('Nenhuma instalação encontrada');
+return;
+}
 
-  if(!primeiro){
+let primeiro = dados.find(i=>i[8] !== 'nan' && i[9] !== 'nan');
 
-    alert('Sem coordenadas válidas');
-    return;
+if(!primeiro){
+alert('Sem coordenadas válidas');
+return;
+}
 
-  }
+if(map){
+map.remove();
+}
 
-  if(map){
+map = L.map('map').setView([
+parseFloat(primeiro[8]),
+parseFloat(primeiro[9])
+],15);
 
-    map.remove();
+L.tileLayer(
+'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+).addTo(map);
 
-  }
 
-  map = L.map('map')
-    .setView(
+dados.forEach(item=>{
 
-      [
-        parseFloat(primeiro[8]),
-        parseFloat(primeiro[9])
-      ],
+if(item[8]=='nan' || item[9]=='nan') return;
 
-      15
+let marker = L.marker([
+parseFloat(item[8]),
+parseFloat(item[9])
+]).addTo(map);
 
-    );
-
-  L.tileLayer(
-
-    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-
-    {
-      attribution:'© OpenStreetMap'
-    }
-
-  ).addTo(map);
-
-  dados.forEach(item => {
-
-    if(
-      item[8] == 'nan' ||
-      item[9] == 'nan'
-    ) return;
-
-    let marker =
-      L.marker([
-
-        parseFloat(item[8]),
-        parseFloat(item[9])
-
-      ]).addTo(map);
-
-    marker.bindPopup(`
-
+marker.bindPopup(`
 <b>⚡ Instalação:</b><br>
 ${item[1]}
 <br><br>
-
 <b>👤 Cliente:</b><br>
 ${item[7]}
 <br><br>
-
 <b>📍 Rua:</b><br>
 ${item[3]}, ${item[4]}
 <br><br>
-
-<a
-href="${item[10]}"
-target="_blank"
->
-
+<a href="${item[10]}" target="_blank">
 🗺 Navegar
-
 </a>
-
 `);
 
-  });
+});
 
 }
 
+function mostrarLoading(texto='Carregando...'){
+loadingTela.classList.remove('oculto');
+document.querySelector('.loadingTexto').innerText = texto;
+}
+
+function ocultarLoading(){
+loadingTela.classList.add('oculto');
+}
+
+function atualizarInternet(){
+
+if(navigator.onLine){
+offlineAviso.classList.add('oculto');
+}else{
+offlineAviso.classList.remove('oculto');
+}
+
+}
+
+window.addEventListener('online', atualizarInternet);
+window.addEventListener('offline', atualizarInternet);
+
+atualizarInternet();
+
 if ('serviceWorker' in navigator) {
-
-  window.addEventListener('load', () => {
-
-    navigator.serviceWorker
-      .register('./sw.js?v=13006');
-
-  });
-
+window.addEventListener('load', () => {
+navigator.serviceWorker.register('./sw.js?v=14000');
+});
 }
 
 </script>
 
 </body>
 </html>
+```
