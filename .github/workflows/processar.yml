@@ -1,1 +1,33 @@
+name: Processar CSV
 
+on:
+  push:
+    paths:
+      - 'csv/resumo.csv'
+
+jobs:
+
+  processar:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Baixar projeto
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Executar conversão
+        run: node scripts/converter.js
+
+      - name: Commit automático
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "Atualização automática dos JSONs" || echo "Sem alterações"
+          git push
