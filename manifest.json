@@ -1,21 +1,16 @@
 {
-  "name":"RotaLeitura",
-  "short_name":"RotaLeitura",
-  "start_url":"/RotaLeiturav2/",
-  "display":"standalone",
-  "background_color":"#031D44",
-  "theme_color":"#031D44",
-  "orientation":"portrait",
-  "icons":[
+  "name": "RotaLeitura",
+  "short_name": "RotaLeitura",
+  "start_url": "/RotaLeiturav19/index.html",
+  "display": "standalone",
+  "background_color": "#031D44",
+  "theme_color": "#031D44",
+  "orientation": "portrait",
+  "icons": [
     {
-      "src":"launchericon-192x192.png",
-      "sizes":"192x192",
-      "type":"image/png"
-    },
-    {
-      "src":"launchericon-512x512.png",
-      "sizes":"512x512",
-      "type":"image/png"
+      "src": "launchericon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
     }
   ]
 }
