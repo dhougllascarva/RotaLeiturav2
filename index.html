@@ -337,12 +337,12 @@ from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const firebaseConfig = {
 
-apiKey: "SUA_API_KEY",
-authDomain: "SEU_AUTH_DOMAIN",
-projectId: "SEU_PROJECT_ID",
-storageBucket: "SEU_STORAGE_BUCKET",
-messagingSenderId: "SEU_MSG_ID",
-appId: "SEU_APP_ID"
+  apiKey: "AIzaSyAVmx3h0aMvivJ3jAVSkyndK8buCnrRbEA",
+  authDomain: "rotaleitura.firebaseapp.com",
+  projectId: "rotaleitura",
+  storageBucket: "rotaleitura.firebasestorage.app",
+  messagingSenderId: "1084691059100",
+  appId: "1:1084691059100:web:2ce8c10354da0cc191f859"
 
 };
 
@@ -402,6 +402,20 @@ loadingTela.classList.add('oculto');
 
 }
 
+/* =========================
+   TIMEOUT DE SEGURANÇA
+========================= */
+
+setTimeout(()=>{
+
+ocultarLoading();
+
+},10000);
+
+/* =========================
+   LOGIN
+========================= */
+
 window.fazerLogin = async function(){
 
 try{
@@ -409,20 +423,29 @@ try{
 mostrarLoading('Entrando...');
 
 await signInWithEmailAndPassword(
-  auth,
-  document.getElementById('email').value,
-  document.getElementById('senha').value
+auth,
+document.getElementById('email').value,
+document.getElementById('senha').value
 );
 
 }catch(e){
 
 console.error(e);
-alert('Login inválido');
+
+alert(
+'Erro no login.\n\n' +
+(e.message || e)
+);
+
 ocultarLoading();
 
 }
 
 }
+
+/* =========================
+   LOGOUT
+========================= */
 
 window.logout = async function(){
 
@@ -430,40 +453,53 @@ await signOut(auth);
 
 }
 
-onAuthStateChanged(auth, async user => {
+/* =========================
+   AUTH
+========================= */
+
+onAuthStateChanged(auth, async (user)=>{
+
+try{
 
 if(!user){
 
 loginTela.classList.remove('oculto');
 appTela.classList.add('oculto');
+
 ocultarLoading();
+
 return;
 
 }
-
-try{
 
 mostrarLoading('Carregando usuário...');
 
-let ref = doc(db,'usuarios',user.email);
-let snap = await getDoc(ref);
+const ref = doc(db,'usuarios',user.email);
+
+const snap = await getDoc(ref);
 
 if(!snap.exists()){
 
-alert('Sem permissão');
-logout();
+alert('Usuário sem permissão.');
+
+await logout();
+
 ocultarLoading();
+
 return;
 
 }
 
-let dados = snap.data();
+const dados = snap.data();
 
 if(!dados.ativo){
 
-alert('Usuário desativado');
-logout();
+alert('Usuário desativado.');
+
+await logout();
+
 ocultarLoading();
+
 return;
 
 }
@@ -480,37 +516,66 @@ ocultarLoading();
 }catch(e){
 
 console.error(e);
-alert('Erro ao carregar usuário');
+
+alert(
+'Erro ao carregar usuário.\n\n' +
+(e.message || e)
+);
+
 ocultarLoading();
 
 }
 
 });
 
+/* =========================
+   SISTEMA
+========================= */
+
 async function carregarSistema(){
 
 try{
 
-let response = await fetch('./indexes.json');
+mostrarLoading('Carregando sistema...');
+
+const response = await fetch('./indexes.json?v=' + Date.now());
+
+if(!response.ok){
+
+throw new Error('indexes.json não encontrado');
+
+}
+
 indexes = await response.json();
 
 popularAreas();
 
+ocultarLoading();
+
 }catch(e){
 
 console.error(e);
-alert('Erro ao carregar indexes.json');
+
+alert(
+'Erro ao carregar indexes.json\n\n' +
+(e.message || e)
+);
+
 ocultarLoading();
 
 }
 
 }
 
+/* =========================
+   ÁREAS
+========================= */
+
 function popularAreas(){
 
 let html = '<option value="">Selecionar Área</option>';
 
-permissoes.forEach(area => {
+permissoes.forEach(area=>{
 
 html += `
 <option value="${area}">
@@ -537,6 +602,10 @@ carregarAreaMapa();
 }
 
 }
+
+/* =========================
+   ABAS
+========================= */
 
 window.abrirAba = function(tipo){
 
@@ -568,20 +637,24 @@ map.invalidateSize();
 
 }
 
+/* =========================
+   NORMALIZAR
+========================= */
+
 function normalizar(texto){
 
 return String(texto || '')
 .toLowerCase()
 .normalize('NFD')
 .replace(/[\u0300-\u036f]/g,'')
-.replace(/rua/g,'')
-.replace(/avenida/g,'')
-.replace(/travessa/g,'')
-.replace(/av/g,'')
 .replace(/\s+/g,'')
 .trim();
 
 }
+
+/* =========================
+   BUSCA
+========================= */
 
 areaSelect.addEventListener('change', carregarArea);
 
@@ -593,24 +666,30 @@ mostrarLoading('Carregando instalações...');
 
 bancoBusca = [];
 
-let arquivos = indexes[areaSelect.value] || [];
+const arquivos = indexes[areaSelect.value] || [];
 
-for(let arquivo of arquivos){
+for(const arquivo of arquivos){
 
-let response = await fetch('./'+arquivo);
-let parte = await response.json();
+const response = await fetch('./'+arquivo+'?v='+Date.now());
+
+const parte = await response.json();
 
 bancoBusca = bancoBusca.concat(parte);
 
 }
 
-let mrus = [...new Set(bancoBusca.map(i=>i[0]))];
+const mrus = [...new Set(bancoBusca.map(i=>i[0]))];
+
 mrus.sort();
 
 listaMRUs.innerHTML='';
 
 mrus.forEach(mru=>{
-listaMRUs.innerHTML += `<option value="${mru}">`;
+
+listaMRUs.innerHTML += `
+<option value="${mru}">
+`;
+
 });
 
 ocultarLoading();
@@ -618,7 +697,12 @@ ocultarLoading();
 }catch(e){
 
 console.error(e);
-alert('Erro ao carregar área');
+
+alert(
+'Erro ao carregar área.\n\n' +
+(e.message || e)
+);
+
 ocultarLoading();
 
 }
@@ -630,24 +714,28 @@ inputBusca.addEventListener('input', pesquisar);
 
 function pesquisar(){
 
-let filtroMRU = normalizar(inputMRU.value);
-let filtroTexto = normalizar(inputBusca.value);
+const filtroMRU = normalizar(inputMRU.value);
+const filtroTexto = normalizar(inputBusca.value);
 
-let resultados = bancoBusca.filter(item=>{
+const resultados = bancoBusca.filter(item=>{
 
-let okMRU = !filtroMRU || normalizar(item[0]).includes(filtroMRU);
+const okMRU =
+!filtroMRU ||
+normalizar(item[0]).includes(filtroMRU);
 
-let texto = normalizar(
-item[1]+' '+
-item[2]+' '+
-item[3]+' '+
-item[4]+' '+
-item[5]+' '+
-item[6]+' '+
-item[7]
+const texto = normalizar(
+(item[1]||'')+' '+
+(item[2]||'')+' '+
+(item[3]||'')+' '+
+(item[4]||'')+' '+
+(item[5]||'')+' '+
+(item[6]||'')+' '+
+(item[7]||'')
 );
 
-let okTexto = !filtroTexto || texto.includes(filtroTexto);
+const okTexto =
+!filtroTexto ||
+texto.includes(filtroTexto);
 
 return okMRU && okTexto;
 
@@ -659,7 +747,7 @@ ${resultados.length} resultado(s)
 </div>
 `;
 
-if(resultados.length === 0){
+if(resultados.length===0){
 
 html += `
 <div class="card">
@@ -675,25 +763,31 @@ html += `
 <div class="card">
 
 <div class="infoTitulo">⚡ Instalação</div>
-<div class="infoValor">${item[1]}</div>
+<div class="infoValor">${item[1] || ''}</div>
 
 <div class="infoTitulo">🔢 Medidor</div>
-<div class="infoValor">${item[2]}</div>
+<div class="infoValor">${item[2] || ''}</div>
 
 <div class="infoTitulo">📍 Endereço</div>
-<div class="infoValor">${item[3]}, ${item[4]}</div>
+<div class="infoValor">
+${item[3] || ''}, ${item[4] || ''}
+</div>
 
 <div class="infoTitulo">🗺 Bairro</div>
-<div class="infoValor">${item[5]}</div>
+<div class="infoValor">${item[5] || ''}</div>
 
 <div class="infoTitulo">🏙 Cidade</div>
-<div class="infoValor">${item[6]}</div>
+<div class="infoValor">${item[6] || ''}</div>
 
 <div class="infoTitulo">👤 Cliente</div>
-<div class="infoValor">${item[7]}</div>
+<div class="infoValor">${item[7] || ''}</div>
 
-<a class="botao" href="${item[10]}" target="_blank">
+<a class="botao"
+href="${item[10] || '#'}"
+target="_blank">
+
 🗺 Navegar
+
 </a>
 
 </div>
@@ -705,6 +799,10 @@ resultadosDiv.innerHTML = html;
 
 }
 
+/* =========================
+   MAPA
+========================= */
+
 areaMapaSelect.addEventListener('change', carregarAreaMapa);
 
 async function carregarAreaMapa(){
@@ -713,31 +811,40 @@ try{
 
 bancoMapa=[];
 
-let arquivos = indexes[areaMapaSelect.value] || [];
+const arquivos = indexes[areaMapaSelect.value] || [];
 
-for(let arquivo of arquivos){
+for(const arquivo of arquivos){
 
-let response = await fetch('./'+arquivo);
-let parte = await response.json();
+const response = await fetch('./'+arquivo+'?v='+Date.now());
+
+const parte = await response.json();
 
 bancoMapa = bancoMapa.concat(parte);
 
 }
 
-let mrus = [...new Set(bancoMapa.map(i=>i[0]))];
+const mrus = [...new Set(bancoMapa.map(i=>i[0]))];
+
 mrus.sort();
 
 listaMRUsMapa.innerHTML='';
 
 mrus.forEach(mru=>{
-listaMRUsMapa.innerHTML += `<option value="${mru}">`;
+
+listaMRUsMapa.innerHTML += `
+<option value="${mru}">
+`;
+
 });
 
 }catch(e){
 
 console.error(e);
-alert('Erro ao carregar mapa');
-ocultarLoading();
+
+alert(
+'Erro ao carregar mapa.\n\n' +
+(e.message || e)
+);
 
 }
 
@@ -745,18 +852,26 @@ ocultarLoading();
 
 window.carregarMapa = function(){
 
-let dados = bancoMapa.filter(i=>i[0] == inputMRUMapa.value);
+const dados =
+bancoMapa.filter(i=>i[0] == inputMRUMapa.value);
 
 if(dados.length===0){
+
 alert('Nenhuma instalação encontrada');
+
 return;
+
 }
 
-let primeiro = dados.find(i=>i[8] !== 'nan' && i[9] !== 'nan');
+const primeiro =
+dados.find(i=>i[8] !== 'nan' && i[9] !== 'nan');
 
 if(!primeiro){
+
 alert('Sem coordenadas válidas');
+
 return;
+
 }
 
 if(map){
@@ -775,41 +890,46 @@ attribution:'© OpenStreetMap'
 }
 ).addTo(map);
 
-
 dados.forEach(item=>{
 
 if(item[8]=='nan' || item[9]=='nan') return;
 
-let marker = L.marker([
+const marker = L.marker([
 parseFloat(item[8]),
 parseFloat(item[9])
 ]).addTo(map);
 
 marker.bindPopup(`
 <b>⚡ Instalação:</b><br>
-${item[1]}
+${item[1] || ''}
 <br><br>
+
 <b>👤 Cliente:</b><br>
-${item[7]}
+${item[7] || ''}
 <br><br>
+
 <b>📍 Rua:</b><br>
-${item[3]}, ${item[4]}
-<br><br>
-<a href="${item[10]}" target="_blank">
-🗺 Navegar
-</a>
+${item[3] || ''}, ${item[4] || ''}
 `);
 
 });
 
 }
 
+/* =========================
+   INTERNET
+========================= */
+
 function atualizarInternet(){
 
 if(navigator.onLine){
+
 offlineAviso.classList.add('oculto');
+
 }else{
+
 offlineAviso.classList.remove('oculto');
+
 }
 
 }
@@ -819,15 +939,26 @@ window.addEventListener('offline', atualizarInternet);
 
 atualizarInternet();
 
+/* =========================
+   SERVICE WORKER
+========================= */
+
 if ('serviceWorker' in navigator) {
 
-window.addEventListener('load', () => {
+navigator.serviceWorker.getRegistrations()
+.then(registrations=>{
 
-navigator.serviceWorker.register('./sw.js?v=19000');
+for(let registration of registrations){
+
+registration.unregister();
+
+}
 
 });
 
 }
+
+ocultarLoading();
 
 </script>
 
