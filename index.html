@@ -43,11 +43,15 @@ body{
   padding:26px 20px;
   text-align:center;
   box-shadow:0 2px 10px rgba(0,0,0,.12);
+  position:sticky;
+  top:0;
+  z-index:999;
 }
 
 .logo{
   font-size:30px;
   font-weight:700;
+  letter-spacing:.5px;
 }
 
 .sub{
@@ -80,6 +84,7 @@ select{
   background:white;
   outline:none;
   transition:.2s;
+  color:#031D44;
 }
 
 input:focus,
@@ -101,6 +106,11 @@ select:focus{
   border:none;
   width:100%;
   cursor:pointer;
+  transition:.2s;
+}
+
+.botao:active{
+  transform:scale(.98);
 }
 
 .logout{
@@ -112,6 +122,10 @@ select:focus{
   background:white;
   padding:8px;
   gap:8px;
+  position:sticky;
+  top:94px;
+  z-index:998;
+  box-shadow:0 2px 10px rgba(0,0,0,.05);
 }
 
 .aba{
@@ -121,6 +135,8 @@ select:focus{
   border-radius:14px;
   font-weight:600;
   background:#E9EEF5;
+  color:#031D44;
+  cursor:pointer;
 }
 
 .ativa{
@@ -129,7 +145,7 @@ select:focus{
 }
 
 .oculto{
-  display:none;
+  display:none !important;
 }
 
 #map{
@@ -137,6 +153,7 @@ select:focus{
   height:75vh;
   border-radius:22px;
   margin-top:14px;
+  overflow:hidden;
 }
 
 .loadingTela{
@@ -168,6 +185,7 @@ select:focus{
 
 .loadingTexto{
   margin-top:20px;
+  font-size:15px;
 }
 
 .infoTitulo{
@@ -181,6 +199,7 @@ select:focus{
   font-size:15px;
   font-weight:600;
   margin-bottom:14px;
+  color:#031D44;
 }
 
 .statusOffline{
@@ -194,6 +213,14 @@ select:focus{
   border-radius:16px;
   text-align:center;
   z-index:99999;
+  box-shadow:0 4px 18px rgba(0,0,0,.25);
+}
+
+.contadorResultados{
+  font-size:14px;
+  color:#64748B;
+  margin-bottom:16px;
+  font-weight:600;
 }
 
 </style>
@@ -221,6 +248,7 @@ select:focus{
 <div class="card">
 
 <input type="email" id="email" placeholder="Email">
+
 <input type="password" id="senha" placeholder="Senha">
 
 <button class="botao" onclick="fazerLogin()">
@@ -308,17 +336,43 @@ getDoc
 from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const firebaseConfig = {
+
 apiKey: "SUA_API_KEY",
 authDomain: "SEU_AUTH_DOMAIN",
 projectId: "SEU_PROJECT_ID",
 storageBucket: "SEU_STORAGE_BUCKET",
 messagingSenderId: "SEU_MSG_ID",
 appId: "SEU_APP_ID"
+
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+const loginTela = document.getElementById('loginTela');
+const appTela = document.getElementById('appTela');
+
+const areaSelect = document.getElementById('area');
+const areaMapaSelect = document.getElementById('areaMapa');
+
+const listaMRUs = document.getElementById('listaMRUs');
+const listaMRUsMapa = document.getElementById('listaMRUsMapa');
+
+const abaBusca = document.getElementById('abaBusca');
+const abaMapa = document.getElementById('abaMapa');
+
+const btnBusca = document.getElementById('btnBusca');
+const btnMapa = document.getElementById('btnMapa');
+
+const loadingTela = document.getElementById('loadingTela');
+const offlineAviso = document.getElementById('offlineAviso');
+
+const resultadosDiv = document.getElementById('resultados');
+
+const inputMRU = document.getElementById('mru');
+const inputBusca = document.getElementById('busca');
+const inputMRUMapa = document.getElementById('mruMapa');
 
 let permissoes = [];
 let bancoBusca = [];
@@ -335,6 +389,19 @@ const AREAS = {
 "176":"CAMACAN"
 };
 
+function mostrarLoading(texto='Carregando...'){
+
+loadingTela.classList.remove('oculto');
+document.querySelector('.loadingTexto').innerText = texto;
+
+}
+
+function ocultarLoading(){
+
+loadingTela.classList.add('oculto');
+
+}
+
 window.fazerLogin = async function(){
 
 try{
@@ -349,11 +416,8 @@ await signInWithEmailAndPassword(
 
 }catch(e){
 
-alert('Login inválido');
 console.error(e);
-
-}finally{
-
+alert('Login inválido');
 ocultarLoading();
 
 }
@@ -361,7 +425,9 @@ ocultarLoading();
 }
 
 window.logout = async function(){
+
 await signOut(auth);
+
 }
 
 onAuthStateChanged(auth, async user => {
@@ -370,7 +436,7 @@ if(!user){
 
 loginTela.classList.remove('oculto');
 appTela.classList.add('oculto');
-
+ocultarLoading();
 return;
 
 }
@@ -379,22 +445,27 @@ try{
 
 mostrarLoading('Carregando usuário...');
 
-let snap = await getDoc(
-  doc(db,'usuarios',user.email)
-);
+let ref = doc(db,'usuarios',user.email);
+let snap = await getDoc(ref);
 
 if(!snap.exists()){
+
 alert('Sem permissão');
 logout();
+ocultarLoading();
 return;
+
 }
 
 let dados = snap.data();
 
 if(!dados.ativo){
+
 alert('Usuário desativado');
 logout();
+ocultarLoading();
 return;
+
 }
 
 permissoes = dados.areas || [];
@@ -404,12 +475,12 @@ appTela.classList.remove('oculto');
 
 await carregarSistema();
 
+ocultarLoading();
+
 }catch(e){
+
 console.error(e);
 alert('Erro ao carregar usuário');
-
-}finally{
-
 ocultarLoading();
 
 }
@@ -421,11 +492,6 @@ async function carregarSistema(){
 try{
 
 let response = await fetch('./indexes.json');
-
-if(!response.ok){
-throw new Error('Erro ao carregar indexes');
-}
-
 indexes = await response.json();
 
 popularAreas();
@@ -433,7 +499,8 @@ popularAreas();
 }catch(e){
 
 console.error(e);
-alert('Erro ao carregar sistema');
+alert('Erro ao carregar indexes.json');
+ocultarLoading();
 
 }
 
@@ -443,20 +510,26 @@ function popularAreas(){
 
 let html = '<option value="">Selecionar Área</option>';
 
-permissoes.forEach(areaCodigo => {
-html += `<option value="${areaCodigo}">${areaCodigo} - ${AREAS[areaCodigo] || areaCodigo}</option>`;
+permissoes.forEach(area => {
+
+html += `
+<option value="${area}">
+${area} - ${AREAS[area]}
+</option>
+`;
+
 });
 
-area.innerHTML = html;
-areaMapa.innerHTML = html;
+areaSelect.innerHTML = html;
+areaMapaSelect.innerHTML = html;
 
 if(permissoes.length === 1){
 
-area.value = permissoes[0];
-areaMapa.value = permissoes[0];
+areaSelect.value = permissoes[0];
+areaMapaSelect.value = permissoes[0];
 
-area.style.display='none';
-areaMapa.style.display='none';
+areaSelect.style.display='none';
+areaMapaSelect.style.display='none';
 
 carregarArea();
 carregarAreaMapa();
@@ -484,9 +557,11 @@ abaMapa.classList.remove('oculto');
 btnMapa.classList.add('ativa');
 
 setTimeout(()=>{
+
 if(map){
 map.invalidateSize();
 }
+
 },300);
 
 }
@@ -508,26 +583,21 @@ return String(texto || '')
 
 }
 
-area.addEventListener('change', carregarArea);
+areaSelect.addEventListener('change', carregarArea);
 
 async function carregarArea(){
 
-mostrarLoading('Carregando instalações...');
-
 try{
+
+mostrarLoading('Carregando instalações...');
 
 bancoBusca = [];
 
-let arquivos = indexes[area.value] || [];
+let arquivos = indexes[areaSelect.value] || [];
 
 for(let arquivo of arquivos){
 
 let response = await fetch('./'+arquivo);
-
-if(!response.ok){
-throw new Error('Erro ao carregar '+arquivo);
-}
-
 let parte = await response.json();
 
 bancoBusca = bancoBusca.concat(parte);
@@ -539,32 +609,31 @@ mrus.sort();
 
 listaMRUs.innerHTML='';
 
-mrus.forEach(mruItem=>{
-listaMRUs.innerHTML += `<option value="${mruItem}">`;
+mrus.forEach(mru=>{
+listaMRUs.innerHTML += `<option value="${mru}">`;
 });
+
+ocultarLoading();
 
 }catch(e){
 
 console.error(e);
 alert('Erro ao carregar área');
-
-}finally{
-
 ocultarLoading();
 
 }
 
 }
 
-mru.addEventListener('input', pesquisar);
-busca.addEventListener('input', pesquisar);
+inputMRU.addEventListener('input', pesquisar);
+inputBusca.addEventListener('input', pesquisar);
 
 function pesquisar(){
 
-let filtroMRU = normalizar(mru.value);
-let filtroTexto = normalizar(busca.value);
+let filtroMRU = normalizar(inputMRU.value);
+let filtroTexto = normalizar(inputBusca.value);
 
-let listaResultados = bancoBusca.filter(item=>{
+let resultados = bancoBusca.filter(item=>{
 
 let okMRU = !filtroMRU || normalizar(item[0]).includes(filtroMRU);
 
@@ -585,16 +654,22 @@ return okMRU && okTexto;
 }).slice(0,100);
 
 let html = `
-<div class="card">
-<b>${listaResultados.length}</b> resultado(s)
+<div class="contadorResultados">
+${resultados.length} resultado(s)
 </div>
 `;
 
-if(listaResultados.length === 0){
-html += `<div class="card">Nenhum resultado encontrado.</div>`;
+if(resultados.length === 0){
+
+html += `
+<div class="card">
+Nenhum resultado encontrado.
+</div>
+`;
+
 }
 
-listaResultados.forEach(item=>{
+resultados.forEach(item=>{
 
 html += `
 <div class="card">
@@ -626,30 +701,23 @@ html += `
 
 });
 
-document.getElementById('resultados').innerHTML = html;
+resultadosDiv.innerHTML = html;
 
 }
 
-areaMapa.addEventListener('change', carregarAreaMapa);
+areaMapaSelect.addEventListener('change', carregarAreaMapa);
 
 async function carregarAreaMapa(){
-
-mostrarLoading('Carregando mapa...');
 
 try{
 
 bancoMapa=[];
 
-let arquivos = indexes[areaMapa.value] || [];
+let arquivos = indexes[areaMapaSelect.value] || [];
 
 for(let arquivo of arquivos){
 
 let response = await fetch('./'+arquivo);
-
-if(!response.ok){
-throw new Error('Erro ao carregar '+arquivo);
-}
-
 let parte = await response.json();
 
 bancoMapa = bancoMapa.concat(parte);
@@ -661,17 +729,14 @@ mrus.sort();
 
 listaMRUsMapa.innerHTML='';
 
-mrus.forEach(mruItem=>{
-listaMRUsMapa.innerHTML += `<option value="${mruItem}">`;
+mrus.forEach(mru=>{
+listaMRUsMapa.innerHTML += `<option value="${mru}">`;
 });
 
 }catch(e){
 
 console.error(e);
 alert('Erro ao carregar mapa');
-
-}finally{
-
 ocultarLoading();
 
 }
@@ -680,7 +745,7 @@ ocultarLoading();
 
 window.carregarMapa = function(){
 
-let dados = bancoMapa.filter(i=>i[0] == mruMapa.value);
+let dados = bancoMapa.filter(i=>i[0] == inputMRUMapa.value);
 
 if(dados.length===0){
 alert('Nenhuma instalação encontrada');
@@ -704,7 +769,10 @@ parseFloat(primeiro[9])
 ],15);
 
 L.tileLayer(
-'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+{
+attribution:'© OpenStreetMap'
+}
 ).addTo(map);
 
 
@@ -736,15 +804,6 @@ ${item[3]}, ${item[4]}
 
 }
 
-function mostrarLoading(texto='Carregando...'){
-loadingTela.classList.remove('oculto');
-document.querySelector('.loadingTexto').innerText = texto;
-}
-
-function ocultarLoading(){
-loadingTela.classList.add('oculto');
-}
-
 function atualizarInternet(){
 
 if(navigator.onLine){
@@ -761,13 +820,16 @@ window.addEventListener('offline', atualizarInternet);
 atualizarInternet();
 
 if ('serviceWorker' in navigator) {
+
 window.addEventListener('load', () => {
-navigator.serviceWorker.register('./sw.js?v=17000');
+
+navigator.serviceWorker.register('./sw.js?v=14000');
+
 });
+
 }
 
 </script>
 
 </body>
 </html>
-```
