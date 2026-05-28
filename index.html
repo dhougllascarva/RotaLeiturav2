@@ -1339,8 +1339,8 @@ fillOpacity:1
 
 });
 
+marker.instalacao = item[1] || '-';
 marker.options.link = item[10];
-marker.options.instalacao = item[1];
   
 marker.on('mouseover', function(){
 this.setStyle({
@@ -1446,7 +1446,7 @@ margin-bottom:10px;
 font-weight:600;
 color:#031D44;
 ">
-${m.options.instalacao || ''}
+${m.instalacao || '-'}
 </div>
 
 <button
