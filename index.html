@@ -1327,7 +1327,7 @@ bounds.push([lat,lng]);
 
 const marker = L.circleMarker([lat,lng],{
 
-renderer: L.canvas()
+renderer: L.canvas(),
 
 radius: zoomAtual >= 18 ? 12 : 8,
 
@@ -1351,7 +1351,6 @@ marker.on('mouseout', function(){
 this.setStyle({
 fillColor:'#00B0FF'
 });
-
 });
 
 marker.bindPopup(`
