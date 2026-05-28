@@ -351,7 +351,6 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-await abrirBancoOffline();
 const auth = getAuth(app);
 const db = getFirestore(app);
 
@@ -391,6 +390,8 @@ let cacheVersao = 'v1';
 ========================= */
 
 let dbOffline = null;
+  
+await abrirBancoOffline();
 
 function abrirBancoOffline(){
 
@@ -999,13 +1000,22 @@ async function carregarAreaMapa(){
 
 try{
 
-bancoMapa=[];
+bancoMapa = [];
 
-const arquivos = indexes[areaMapaSelect.value] || [];
+const area = areaMapaSelect.value;
+
+try{
+
+const arquivos = indexes[area] || [];
 
 for(const arquivo of arquivos){
 
-const response = await fetch('./'+arquivo+'?v='+Date.now());
+const response =
+await fetch('./'+arquivo+'?v='+Date.now());
+
+if(!response.ok){
+throw new Error();
+}
 
 const parte = await response.json();
 
@@ -1013,7 +1023,32 @@ bancoMapa = bancoMapa.concat(parte);
 
 }
 
-const mrus = [...new Set(bancoMapa.map(i=>i[0]))];
+await salvarAreaOffline(
+'mapa_'+area,
+bancoMapa
+);
+
+}catch{
+
+const cache =
+await lerAreaOffline('mapa_'+area);
+
+if(cache){
+
+bancoMapa = cache.dados;
+
+}else{
+
+throw new Error(
+'Mapa offline não encontrado'
+);
+
+}
+
+}
+
+const mrus =
+[...new Set(bancoMapa.map(i=>i[0]))];
 
 mrus.sort();
 
