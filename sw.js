@@ -1,23 +1,22 @@
 const CACHE_NAME = 'rotaleitura-v1';
 
 const urlsToCache = [
-  '/RotaLeitura/',
-  '/RotaLeitura/index.html',
-  '/RotaLeitura/manifest.json',
-  '/RotaLeitura/launchericon-192x192.png',
-  '/RotaLeitura/launchericon-512x512.png'
+  './',
+  './index.html',
+  './manifest.json',
+  './launchericon-192x192.png'
 ];
 
 self.addEventListener('install', event => {
 
+  self.skipWaiting();
+
   event.waitUntil(
 
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
+    .then(cache => cache.addAll(urlsToCache))
 
   );
-
-  self.skipWaiting();
 
 });
 
@@ -32,9 +31,7 @@ self.addEventListener('activate', event => {
         keys.map(key => {
 
           if(key !== CACHE_NAME){
-
             return caches.delete(key);
-
           }
 
         })
@@ -51,14 +48,16 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
 
+  if(event.request.method !== 'GET') return;
+
   event.respondWith(
 
     caches.match(event.request)
-      .then(response => {
+    .then(response => {
 
-        return response || fetch(event.request);
+      return response || fetch(event.request);
 
-      })
+    })
 
   );
 
