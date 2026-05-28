@@ -1,15 +1,25 @@
 const CACHE_NAME = 'rotaleitura-v1';
 
 const urlsToCache = [
+
   './',
   './index.html',
   './manifest.json',
-  './launchericon-192x192.png'
+
+  './launchericon-192x192.png',
+
+  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
+
 ];
 
-self.addEventListener('install', event => {
+/* =========================
+   INSTALAÇÃO
+========================= */
 
-  self.skipWaiting();
+self.addEventListener('install', event => {
 
   event.waitUntil(
 
@@ -18,7 +28,13 @@ self.addEventListener('install', event => {
 
   );
 
+  self.skipWaiting();
+
 });
+
+/* =========================
+   ATIVAÇÃO
+========================= */
 
 self.addEventListener('activate', event => {
 
@@ -31,7 +47,9 @@ self.addEventListener('activate', event => {
         keys.map(key => {
 
           if(key !== CACHE_NAME){
+
             return caches.delete(key);
+
           }
 
         })
@@ -46,16 +64,40 @@ self.addEventListener('activate', event => {
 
 });
 
-self.addEventListener('fetch', event => {
+/* =========================
+   FETCH
+========================= */
 
-  if(event.request.method !== 'GET') return;
+self.addEventListener('fetch', event => {
 
   event.respondWith(
 
     caches.match(event.request)
     .then(response => {
 
-      return response || fetch(event.request);
+      if(response){
+
+        return response;
+
+      }
+
+      return fetch(event.request)
+      .then(networkResponse => {
+
+        return caches.open(CACHE_NAME)
+        .then(cache => {
+
+          cache.put(event.request, networkResponse.clone());
+
+          return networkResponse;
+
+        });
+
+      });
+
+    }).catch(() => {
+
+      return caches.match('./index.html');
 
     })
 
