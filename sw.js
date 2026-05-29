@@ -1,106 +1,124 @@
-const CACHE_NAME = 'rotaleitura-v1';
+const CACHE_NAME = 'rotaleitura-cache-v1';
 
-const urlsToCache = [
+const APP_SHELL = [
 
-  './',
-  './index.html',
-  './manifest.json',
-
-  './launchericon-192x192.png',
-
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
-
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
+'./',
+'./index.html',
+'./manifest.json',
+'./launchericon-192x192.png'
 
 ];
 
 /* =========================
-   INSTALAÇÃO
+INSTALL
 ========================= */
 
 self.addEventListener('install', event => {
 
-  event.waitUntil(
+console.log('SW instalado');
 
-    caches.open(CACHE_NAME)
-    .then(cache => cache.addAll(urlsToCache))
+event.waitUntil(
 
-  );
+caches.open(CACHE_NAME)
+.then(cache => {
 
-  self.skipWaiting();
+return cache.addAll(APP_SHELL);
+
+})
+
+);
+
+self.skipWaiting();
 
 });
 
 /* =========================
-   ATIVAÇÃO
+ACTIVATE
 ========================= */
 
 self.addEventListener('activate', event => {
 
-  event.waitUntil(
+console.log('SW ativado');
 
-    caches.keys().then(keys => {
+event.waitUntil(
 
-      return Promise.all(
+caches.keys().then(keys => {
 
-        keys.map(key => {
+return Promise.all(
 
-          if(key !== CACHE_NAME){
+keys.map(key => {
 
-            return caches.delete(key);
+if(key !== CACHE_NAME){
 
-          }
+console.log('Cache antigo removido:', key);
 
-        })
+return caches.delete(key);
 
-      );
+}
 
-    })
+})
 
-  );
+);
 
-  self.clients.claim();
+})
+
+);
+
+self.clients.claim();
 
 });
 
 /* =========================
-   FETCH
+FETCH INTELIGENTE
 ========================= */
 
 self.addEventListener('fetch', event => {
 
-  event.respondWith(
+const request = event.request;
 
-    caches.match(event.request)
-    .then(response => {
+/* IGNORA MÉTODOS DIFERENTES */
 
-      if(response){
+if(request.method !== 'GET') return;
 
-        return response;
+/* IGNORA FIREBASE */
 
-      }
+if(
+request.url.includes('firestore') ||
+request.url.includes('googleapis') ||
+request.url.includes('gstatic')
+){
+return;
+}
 
-      return fetch(event.request)
-      .then(networkResponse => {
+/* =========================
+NETWORK FIRST
+========================= */
 
-        return caches.open(CACHE_NAME)
-        .then(cache => {
+event.respondWith(
 
-          cache.put(event.request, networkResponse.clone());
+fetch(request)
 
-          return networkResponse;
+.then(response => {
 
-        });
+const responseClone = response.clone();
 
-      });
+caches.open(CACHE_NAME)
+.then(cache => {
 
-    }).catch(() => {
+cache.put(request, responseClone);
 
-      return caches.match('./index.html');
+});
 
-    })
+return response;
 
-  );
+})
+
+.catch(() => {
+
+return caches.match(request);
+
+})
+
+);
 
 });
